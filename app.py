@@ -103,6 +103,29 @@ def index():
     conn.close()
     return render_template("index.html", products=rows)
 
+@app.route("/register", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        db = get_db()
+        c = db.cursor()
+        try:
+            c.execute("INSERT INTO users (username, password) VALUES(?,?)", (username, password))
+            db.commit
+            db.close
+        except:
+            return "Error: user already exists."
+        return redirect("/login")
+    return render_template("register.html")
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    username = request.form["username"]
+    password = request.form["password"]
+    db = get_db()
+    c = db.cursor()
+    c.execute("")
 
 @app.route("/product/<slug>")
 def product(slug):
