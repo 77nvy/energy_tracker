@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to the Rosla{% endblock %}
+
+{% block content %}
+
+
+
+  <h1>{{ product["name"] }}</h1>
+  <p>{{ product["short_desc"] }}</p>
+
+  <h3>About this product</h3>
+  <p>{{ product["long_desc"] }}</p>
+
+  <h3>Benefits</h3>
+  <ul>
+    {% for b in benefits %}
+      <li>{{ b }}</li>
+    {% endfor %}
+  </ul>
+
+  <h3>Typical energy saving (estimate)</h3>
+  <p>{{ (product["typical_saving_pct"] * 100) | round(0) }}% (varies by household)</p>
+
+  <p>
+    <a href="/book">Book a consultation</a>
+  </p>
+{% endblock %}

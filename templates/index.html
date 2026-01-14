@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome to the Zoo{% endblock %}
+{% block title %}Welcome to the Tesla{% endblock %}
 
 {% block content %}
 
@@ -12,4 +12,12 @@
         <h1 class="display-4 fw-bold">Check out some home energy solutions</h1>
     </div>
 </div>
+
+  {% for p in products %}
+    <div style="border:1px solid #ccc; padding:12px; margin:12px 0; max-width:600px;">
+      <h2>{{ p["name"] }}</h2>
+      <p>{{ p["short_desc"] }}</p>
+      <a href="/product/{{ p['slug'] }}">View Product</a>
+    </div>
+  {% endfor %}
 {% endblock %}

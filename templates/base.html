@@ -13,10 +13,10 @@
     <nav>
         <ul>
             <li><a href="/">Home</a></li>
-            
-            <li><a href="/solar">Solar</a></li>
-            <li><a href="/evCharger">EV Charger</a></li>
-            <li><a href="/smartHome">Smart Home</a></li>
+
+            <li><a href="{{ url_for('product', slug='solar') }}">Solar</a></li>
+            <li><a href="{{ url_for('product', slug='ev-charger') }}">EV Charger</a></li>
+            <li><a href="{{ url_for('product', slug='smart-home') }}">Smart Home</a></li>
 
             {% if session.get('user_id') %}
                 <li><a href="/logout">Logout ({{ session['username'] }})</a></li>
