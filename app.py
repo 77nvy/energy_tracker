@@ -386,17 +386,8 @@ def login():
 
     return redirect(next_url or url_for("account"))
 
-def login_required(view):
-    @wraps(view)
-    def wrapped(*args, **kwargs):
-        if not session.get("user_id"):
-            return redirect(url_for("login"))
-        return view(*args, **kwargs)
-    return wrapped
-
 
 @app.route("/change-password", methods=["GET", "POST"])
-@login_required
 def change_password():
     if request.method == "GET":
         return render_template("change_password.html")
@@ -417,7 +408,6 @@ def change_password():
 
 
 @app.route("/account")
-@login_required
 def account():
     uid = session["user_id"]
     conn = get_db()
