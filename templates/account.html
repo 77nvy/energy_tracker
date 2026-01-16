@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Your Account</h2>
+
+<h4>Your Calculations</h4>
+<ul>
+  {% for c in calcs %}
+    <li>{{ c.created_at }} — {{ c.product_name }} — £{{ c.cost_saved }}/mo</li>
+  {% else %}
+    <li>No calculations yet.</li>
+  {% endfor %}
+</ul>
+
+<h4>Your Bookings</h4>
+<ul>
+  {% for b in bookings %}
+    <li>{{ b.preferred_date }} {{ b.preferred_time }} — {{ b.full_name }} ({{ b.product_name }})</li>
+  {% else %}
+    <li>No bookings yet.</li>
+  {% endfor %}
+</ul>
+
+<a href="{{ url_for('logout') }}">Logout</a>
+{% endblock %}
