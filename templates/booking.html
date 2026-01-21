@@ -1,29 +1,25 @@
 {% extends "base.html" %}
 {% block content %}
+<div class="page-content">
+  <h1 class="page-title">Book a Consultation</h1>
 
-<h1>Book a Consultation</h1>
+  {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+  {% endif %}
 
-{% if error %}
-  <div class="alert alert-danger">{{ error }}</div>
-{% endif %}
-
-<div class="card mb-4">
-  <div class="card-body">
-    <h5 class="card-title">Your Results ({{ calc["product_name"] }})</h5>
-    <ul class="mb-0">
+  <div class="results-card">
+    <h5>Your Results ({{ calc["product_name"] }})</h5>
+    <ul>
       <li><strong>Monthly energy saved:</strong> {{ calc["kwh_saved"] }} kWh</li>
       <li><strong>Monthly cost saved:</strong> £{{ calc["cost_saved"] }}</li>
       <li><strong>Monthly CO₂ reduction:</strong> {{ calc["co2_saved"] }} kg</li>
       <li><strong>Results sent to:</strong> {{ calc["email"] }}</li>
     </ul>
   </div>
-</div>
 
-<div class="card shadow-sm">
-  <div class="card-header"><strong>Schedule your consultation</strong></div>
-  <div class="card-body">
+  <div class="form-card">
+    <div class="card-header">Schedule your consultation</div>
     <form method="POST" action="{{ url_for('book', calc_id=calc['id']) }}">
-
       <div class="mb-2">
         <label class="form-label">Full name</label>
         <input class="form-control" name="full_name" required>
@@ -41,7 +37,7 @@
 
       <div class="mb-3">
         <label class="form-label">Preferred time</label>
-        <select class="form-select" name="preferred_time" required>
+        <select class="form-control" name="preferred_time" required>
           <option value="09:00">09:00</option>
           <option value="11:00">11:00</option>
           <option value="13:00">13:00</option>
@@ -58,5 +54,4 @@
     </form>
   </div>
 </div>
-
 {% endblock %}

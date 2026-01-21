@@ -1,11 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
+<div class="page-content">
+  <div class="alert alert-success">
+    <h2>Booking Confirmed</h2>
+    <p>Thanks {{ name }} — we'll be in touch soon.</p>
+  </div>
 
-<div class="alert alert-success">
-  <h2>Booking Confirmed</h2>
-  <p>Thanks {{ name }} — we’ll be in touch soon.</p>
+  <div style="text-align: center;">
+    <a class="btn btn-outline-secondary" href="{{ url_for('index') }}">Back to Home</a>
+  </div>
 </div>
-
-<a class="btn btn-outline-secondary" href="{{ url_for('index') }}">Back to Home</a>
-
 {% endblock %}

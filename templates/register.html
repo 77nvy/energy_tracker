@@ -1,18 +1,25 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Register</h2>
+<div class="page-content">
+  <h1 class="page-title">Register</h1>
 
-{% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+  {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
 
-<form method="POST">
-  <div class="mb-2">
-    <label>Email</label>
-    <input class="form-control" type="email" name="email" required>
+  <div class="form-card">
+    <form method="POST">
+      <div class="mb-2">
+        <label class="form-label">Email</label>
+        <input class="form-control" type="email" name="email" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Password (min 8 chars)</label>
+        <input class="form-control" type="password" name="password" required>
+      </div>
+      <button class="btn btn-success w-100" type="submit">Create account</button>
+      <div style="text-align: center; margin-top: 16px;">
+        <a class="btn-link" href="{{ url_for('login') }}">Already have an account? Login</a>
+      </div>
+    </form>
   </div>
-  <div class="mb-2">
-    <label>Password (min 8 chars)</label>
-    <input class="form-control" type="password" name="password" required>
-  </div>
-  <button class="btn btn-success">Create account</button>
-</form>
+</div>
 {% endblock %}

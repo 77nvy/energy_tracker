@@ -1,23 +1,66 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome to the Tesla{% endblock %}
+{% block title %}Rolsa Technologies | Sustainable Energy{% endblock %}
 
 {% block content %}
-
-
-<div class="position-relative text-center">
-    <img src="https://ecowiseinstallations.co.uk/wp-content/uploads/2025/07/efficient_home_energy_solutions_68fha-1024x572.jpg?v=1751552329" class="img-fluid w-100" alt="Banner">
-
-    <div class="position-absolute top-50 start-50 translate-middle text-white">
-        <h1 class="display-4 fw-bold">Check out some home energy solutions</h1>
+<section class="hero">
+    <div class="hero-grid">
+        <div class="hero-visual">
+            <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1200&q=80" alt="Solar array in blue sky" class="hero-img">
+        </div>
+        <div class="hero-card glassy">
+            <p class="eyebrow">Join the world's best</p>
+            <h1 class="hero-title">SUSTAINABLE ENERGY PROVIDER</h1>
+            <p class="hero-copy">Future-ready solar, EV charging, and smart home solutions crafted to maximize savings and cut carbon.</p>
+            <form class="quote-form" action="{{ url_for('product', slug='solar') }}">
+                <div style="display: flex; gap: 10px;">
+                    <input id="postcode" name="postcode" type="text" placeholder="YOUR POSTCODE" style="flex: 1;">
+                    <button class="primary-btn" type="submit">GET QUOTE</button>
+                </div>
+            </form>
+            <div class="hero-meta">
+                <span>24/7 monitoring</span>
+                <span>Certified installers</span>
+                <span>Trusted support</span>
+            </div>
+        </div>
     </div>
-</div>
+</section>
 
-  {% for p in products %}
-    <div style="border:1px solid #ccc; padding:12px; margin:12px 0; max-width:600px;">
-      <h2>{{ p["name"] }}</h2>
-      <p>{{ p["short_desc"] }}</p>
-      <a href="/product/{{ p['slug'] }}">View Product</a>
+<section class="headline">
+    <p>EVERYTHING YOU NEED. PROVIDED BY US.</p>
+</section>
+
+<section class="features">
+    {% set feature_icons = {'solar':'☀️', 'ev-charger':'🔌', 'smart-home':'🏠'} %}
+    <div class="feature-grid">
+        {% for p in products %}
+        <a class="feature-card glassy" href="{{ url_for('product', slug=p['slug']) }}">
+            <div class="feature-icon">{{ feature_icons.get(p['slug'], '⚡') }}</div>
+            <div class="feature-title">{{ p["name"] }}</div>
+            <p class="feature-copy">{{ p["short_desc"] }}</p>
+        </a>
+        {% endfor %}
     </div>
-  {% endfor %}
+</section>
+
+<section class="perovskite glassy">
+    <div class="perovskite-media">
+        <img src="https://images.unsplash.com/photo-1581090700227-1e37b190418e?auto=format&fit=crop&w=900&q=80" alt="Perovskite solar cell close up">
+    </div>
+    <div class="perovskite-copy">
+        <p class="eyebrow">Introducing the</p>
+        <h2>PEROVSKITE SOLAR CELLS</h2>
+        <p class="hero-copy">The next generation of solar technology is here. Perovskite solar cells are revolutionising renewable energy with groundbreaking performance and versatility.</p>
+        <p style="font-weight: 700; margin: 16px 0 8px; color: var(--text-primary);">Key Features:</p>
+        <ul class="bullet-list">
+            <li>Ultra-high efficiency rates exceeding 30%</li>
+            <li>Lightweight and flexible design</li>
+            <li>Lower manufacturing costs than traditional silicon</li>
+            <li>Can be applied to curved surfaces and building materials</li>
+            <li>Thinner than conventional panels while producing more power</li>
+        </ul>
+        <a class="primary-btn" href="{{ url_for('product', slug='solar') }}" style="margin-top: 16px;">EXPLORE PRODUCT</a>
+    </div>
+</section>
 {% endblock %}
