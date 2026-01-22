@@ -25,8 +25,8 @@ def init_db():
     c.execute("""
     CREATE TABLE IF NOT EXISTS users(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE NOT NULL,       -- we'll store email here
-        password TEXT NOT NULL,              -- hashed password
+        username TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
         must_change_password INTEGER NOT NULL DEFAULT 0
     )
     """)
@@ -154,32 +154,27 @@ def calculate_savings(slug: str, electricity_kwh: float, gas_kwh: float, ev_char
     Simple, defensible assumptions for a student project.
     Returns monthly savings.
     """
-    # prices + CO2 factors (easy defaults)
-    elec_price = 0.28   # £/kWh
-    gas_price = 0.07    # £/kWh
-    elec_co2 = 0.20     # kg CO2 per kWh
-    gas_co2 = 0.18      # kg CO2 per kWh
+    elec_price = 0.28
+    gas_price = 0.07
+    elec_co2 = 0.20
+    gas_co2 = 0.18
 
     kwh_saved = 0.0
 
     if slug == "solar":
-        # Solar offsets about 25% of electricity usage
         kwh_saved = electricity_kwh * 0.25
 
     elif slug == "ev-charger":
-        # Only matters if user charges at home. Small efficiency + off-peak behaviour.
         if ev_charging == 1:
             kwh_saved = electricity_kwh * 0.06
         else:
             kwh_saved = 0.0
 
     elif slug == "smart-home":
-        # Smart home reduces both electricity and gas
         elec_red = 0.08 if smart_home == 1 else 0.03
         gas_red = 0.05 if smart_home == 1 else 0.02
         kwh_saved = (electricity_kwh * elec_red) + (gas_kwh * gas_red)
 
-    # Convert kWh saved to money/CO2 saved
     if slug in ("solar", "ev-charger"):
         cost_saved = kwh_saved * elec_price
         co2_saved = kwh_saved * elec_co2
@@ -203,7 +198,7 @@ def create_user_if_needed(email: str, temp_password: str):
         return existing["id"], False
 
     if not temp_password:
-        temp_password = "TempPass123!"  # demo fallback only
+        temp_password = "TempPass123!"
 
     hashed = generate_password_hash(temp_password)
 
@@ -217,13 +212,15 @@ def create_user_if_needed(email: str, temp_password: str):
     conn.close()
     return user_id, True
 
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
             return redirect(url_for('login', next=request.url))
-        return decorated_function
+        return f(*args, **kwargs)  # FIXED: was calling decorated_function instead of f
     return decorated_function
+
 
 # ---------- Routes ----------
 @app.route("/")
@@ -232,138 +229,6 @@ def index():
     rows = conn.execute("SELECT slug, name, short_desc FROM products ORDER BY id").fetchall()
     conn.close()
     return render_template("index.html", products=rows)
-
-@app.route("/register", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-        db = get_db()
-        c = db.cursor()
-        try:
-            c.execute("INSERT INTO users (username, password) VALUES(?,?)", (username, password))
-            db.commit
-            db.close
-        except:
-            return "Error: user already exists."
-        return redirect("/login")
-    return render_template("register.html")
-
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    username = request.form["username"]
-    password = request.form["password"]
-    db = get_db()
-    c = db.cursor()
-    c.execute("")
-
-
-@app.route("/product/<slug>", methods=["GET", "POST"])
-def product(slug):
-    conn = get_db()
-    row = conn.execute(
-        "SELECT slug, name, short_desc, long_desc, benefits, typical_saving_pct FROM products WHERE slug = ?",
-        (slug,)
-    ).fetchone()
-    conn.close()
-
-    if row is None:
-        abort(404)
-
-    benefits_list = [b.strip("• ").strip() for b in row["benefits"].split("\n") if b.strip()]
-
-    if request.method == "GET":
-        return render_template("product.html", product=row, benefits=benefits_list)
-
-    # POST: calculate + require email
-    email = (request.form.get("email") or "").strip().lower()
-    if "@" not in email or "." not in email:
-        return render_template("product.html", product=row, benefits=benefits_list, error="Enter a valid email.")
-
-    # ✅ temp password coming from JS hidden input
-    temp_password = (request.form.get("temp_password") or "").strip()
-
-    electricity_kwh = parse_float(request.form.get("electricity_kwh"), 0.0)
-    gas_kwh = parse_float(request.form.get("gas_kwh"), 0.0)
-    home_size = request.form.get("home_size") or "Small"
-    occupants = parse_int(request.form.get("occupants"), 1)
-    ev_charging = 1 if request.form.get("ev_charging") == "yes" else 0
-    smart_home = 1 if request.form.get("smart_home") == "on" else 0
-
-    kwh_saved, cost_saved, co2_saved = calculate_savings(
-        slug, electricity_kwh, gas_kwh, ev_charging, smart_home
-    )
-
-    # ✅ Create user (if needed) using the JS temp password
-    user_id, created = create_user_if_needed(email, temp_password)
-
-    # Store calculation (optionally store user_id too if you added the column)
-    conn = get_db()
-    c = conn.cursor()
-    c.execute("""
-        INSERT INTO calculations(
-            created_at, product_slug, email, user_id,
-            electricity_kwh, gas_kwh, home_size, occupants, ev_charging, smart_home,
-            kwh_saved, cost_saved, co2_saved
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        datetime.utcnow().isoformat(),
-        slug, email, user_id,
-        electricity_kwh, gas_kwh, home_size, occupants, ev_charging, smart_home,
-        kwh_saved, cost_saved, co2_saved
-    ))
-    calc_id = c.lastrowid
-    conn.commit()
-    conn.close()
-
-    # ❌ Do NOT send email from Flask (403 in your logs)
-    # Email is sent in the browser via EmailJS sendForm()
-
-    return redirect(url_for("book", calc_id=calc_id))
-
-@app.route("/book/<int:calc_id>", methods=["GET", "POST"])
-@login_required 
-def book(calc_id):
-    uid = session["user_id"]
-    conn = get_db()
-    calc = conn.execute("""
-        SELECT c.*, p.name AS product_name
-        FROM calculations c
-        JOIN products p ON p.slug = c.product_slug
-        WHERE c.id = ? AND c.user_id = ?
-    """, (calc_id,uid)).fetchone()
-
-    if calc is None:
-        conn.close()
-        abort(404)
-
-    if request.method == "GET":
-        conn.close()
-        return render_template("booking.html", calc=calc)
-
-    # POST booking
-    full_name = (request.form.get("full_name") or "").strip()
-    phone = (request.form.get("phone") or "").strip()
-    preferred_date = request.form.get("preferred_date") or ""
-    preferred_time = request.form.get("preferred_time") or ""
-    notes = (request.form.get("notes") or "").strip()
-
-    if not full_name or not preferred_date or not preferred_time:
-        conn.close()
-        return render_template("booking.html", calc=calc, error="Fill in name, date and time.")
-
-    c = conn.cursor()
-    c.execute("""
-        INSERT INTO bookings(created_at, calc_id, user_id, full_name, phone, preferred_date, preferred_time, notes)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        datetime.utcnow().isoformat(),
-        calc_id, uid, full_name, phone, preferred_date, preferred_time, notes
-    ))
-
-    conn.commit()
-    conn.close()
-    return render_template("thanks.html", name=full_name)
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -419,7 +284,109 @@ def login():
     return redirect(next_url or url_for("account"))
 
 
+@app.route("/product/<slug>", methods=["GET", "POST"])
+def product(slug):
+    conn = get_db()
+    row = conn.execute(
+        "SELECT slug, name, short_desc, long_desc, benefits, typical_saving_pct FROM products WHERE slug = ?",
+        (slug,)
+    ).fetchone()
+    conn.close()
+
+    if row is None:
+        abort(404)
+
+    benefits_list = [b.strip("• ").strip() for b in row["benefits"].split("\n") if b.strip()]
+
+    if request.method == "GET":
+        return render_template("product.html", product=row, benefits=benefits_list)
+
+    email = (request.form.get("email") or "").strip().lower()
+    if "@" not in email or "." not in email:
+        return render_template("product.html", product=row, benefits=benefits_list, error="Enter a valid email.")
+
+    temp_password = (request.form.get("temp_password") or "").strip()
+
+    electricity_kwh = parse_float(request.form.get("electricity_kwh"), 0.0)
+    gas_kwh = parse_float(request.form.get("gas_kwh"), 0.0)
+    home_size = request.form.get("home_size") or "Small"
+    occupants = parse_int(request.form.get("occupants"), 1)
+    ev_charging = 1 if request.form.get("ev_charging") == "yes" else 0
+    smart_home = 1 if request.form.get("smart_home") == "on" else 0
+
+    kwh_saved, cost_saved, co2_saved = calculate_savings(
+        slug, electricity_kwh, gas_kwh, ev_charging, smart_home
+    )
+
+    user_id, created = create_user_if_needed(email, temp_password)
+
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("""
+        INSERT INTO calculations(
+            created_at, product_slug, email, user_id,
+            electricity_kwh, gas_kwh, home_size, occupants, ev_charging, smart_home,
+            kwh_saved, cost_saved, co2_saved
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        datetime.utcnow().isoformat(),
+        slug, email, user_id,
+        electricity_kwh, gas_kwh, home_size, occupants, ev_charging, smart_home,
+        kwh_saved, cost_saved, co2_saved
+    ))
+    calc_id = c.lastrowid
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for("book", calc_id=calc_id))
+
+
+@app.route("/book/<int:calc_id>", methods=["GET", "POST"])
+@login_required
+def book(calc_id):
+    uid = session["user_id"]
+    conn = get_db()
+    calc = conn.execute("""
+        SELECT c.*, p.name AS product_name
+        FROM calculations c
+        JOIN products p ON p.slug = c.product_slug
+        WHERE c.id = ? AND c.user_id = ?
+    """, (calc_id, uid)).fetchone()
+
+    if calc is None:
+        conn.close()
+        abort(404)
+
+    if request.method == "GET":
+        conn.close()
+        return render_template("booking.html", calc=calc)
+
+    full_name = (request.form.get("full_name") or "").strip()
+    phone = (request.form.get("phone") or "").strip()
+    preferred_date = request.form.get("preferred_date") or ""
+    preferred_time = request.form.get("preferred_time") or ""
+    notes = (request.form.get("notes") or "").strip()
+
+    if not full_name or not preferred_date or not preferred_time:
+        conn.close()
+        return render_template("booking.html", calc=calc, error="Fill in name, date and time.")
+
+    c = conn.cursor()
+    c.execute("""
+        INSERT INTO bookings(created_at, calc_id, user_id, full_name, phone, preferred_date, preferred_time, notes)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        datetime.utcnow().isoformat(),
+        calc_id, uid, full_name, phone, preferred_date, preferred_time, notes
+    ))
+
+    conn.commit()
+    conn.close()
+    return render_template("thanks.html", name=full_name)
+
+
 @app.route("/change-password", methods=["GET", "POST"])
+@login_required
 def change_password():
     if request.method == "GET":
         return render_template("change_password.html")
@@ -440,7 +407,7 @@ def change_password():
 
 
 @app.route("/account")
-@login_required 
+@login_required
 def account():
     uid = session["user_id"]
     conn = get_db()
@@ -464,6 +431,7 @@ def account():
 
     conn.close()
     return render_template("account.html", calcs=calcs, bookings=bookings)
+
 
 @app.route("/logout")
 def logout():
