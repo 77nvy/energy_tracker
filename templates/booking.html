@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-content">
+  <h1 class="page-title">Book a Consultation</h1>
+
+  {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+  {% endif %}
+
+  <div class="results-card">
+    <h5>Your Results ({{ calc["product_name"] }})</h5>
+    <ul>
+      <li><strong>Monthly energy saved:</strong> {{ calc["kwh_saved"] }} kWh</li>
+      <li><strong>Monthly cost saved:</strong> £{{ calc["cost_saved"] }}</li>
+      <li><strong>Monthly CO₂ reduction:</strong> {{ calc["co2_saved"] }} kg</li>
+      <li><strong>Results sent to:</strong> {{ calc["email"] }}</li>
+    </ul>
+  </div>
+
+  <div class="form-card">
+    <div class="card-header">Schedule your consultation</div>
+    <form method="POST" action="{{ url_for('book', calc_id=calc['id']) }}">
+      <div class="mb-2">
+        <label class="form-label">Full name</label>
+        <input class="form-control" name="full_name" required>
+      </div>
+
+      <div class="mb-2">
+        <label class="form-label">Phone (optional)</label>
+        <input class="form-control" name="phone">
+      </div>
+
+      <div class="mb-2">
+        <label class="form-label">Preferred date</label>
+        <input type="date" class="form-control" name="preferred_date" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Preferred time</label>
+        <select class="form-control" name="preferred_time" required>
+          <option value="09:00">09:00</option>
+          <option value="11:00">11:00</option>
+          <option value="13:00">13:00</option>
+          <option value="15:00">15:00</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Notes</label>
+        <textarea class="form-control" name="notes" rows="3"></textarea>
+      </div>
+
+      <button class="btn btn-primary w-100" type="submit">Confirm Booking</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

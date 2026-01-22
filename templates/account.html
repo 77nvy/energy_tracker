@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-content">
+  <h1 class="page-title">Your Account</h1>
+
+  <div class="form-card">
+    <h4>Your Calculations</h4>
+    {% if calcs %}
+      <ul>
+        {% for c in calcs %}
+          <li>{{ c.created_at[:10] }} — {{ c.product_name }} — £{{ c.cost_saved }}/mo saved</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p style="color: var(--text-muted);">No calculations yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="form-card">
+    <h4>Your Bookings</h4>
+    {% if bookings %}
+      <ul>
+        {% for b in bookings %}
+          <li>{{ b.preferred_date }} at {{ b.preferred_time }} — {{ b.full_name }} ({{ b.product_name }})</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p style="color: var(--text-muted);">No bookings yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
