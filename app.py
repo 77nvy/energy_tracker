@@ -217,6 +217,14 @@ def create_user_if_needed(email: str, temp_password: str):
     conn.close()
     return user_id, True
 
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('login', next=request.url))
+        return decorated_function
+    return decorated_function
+
 # ---------- Routes ----------
 @app.route("/")
 def index():
@@ -314,6 +322,7 @@ def product(slug):
     return redirect(url_for("book", calc_id=calc_id))
 
 @app.route("/book/<int:calc_id>", methods=["GET", "POST"])
+@login_required 
 def book(calc_id):
     uid = session["user_id"]
     conn = get_db()
@@ -431,6 +440,7 @@ def change_password():
 
 
 @app.route("/account")
+@login_required 
 def account():
     uid = session["user_id"]
     conn = get_db()

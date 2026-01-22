@@ -26,7 +26,7 @@ class FlaskAppTestCase(unittest.TestCase):
         response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
         #this tests if the text exists in your page so we know it loaded
-        self.assertIn(b"Check out some home energy solutions", response.data)
+        self.assertIn(b"SUSTAINABLE ENERGY PROVIDER", response.data)
 
     def tearDown(self):
         if os.path.exists("test.db"):
