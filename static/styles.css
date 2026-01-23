@@ -247,6 +247,16 @@ main.page-shell {
     font-weight: 700;
 }
 
+.ProductHeadline {
+    text-align: left;
+    margin: 38px 0 12px;
+    font-size: 18px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #ffccdb;
+    font-weight: 700;
+}
+
 /* Features */
 .features {
     margin-bottom: 46px;
