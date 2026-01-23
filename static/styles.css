@@ -281,16 +281,19 @@ main.page-shell {
 }
 
 .feature-icon {
+    text-align: center;
     font-size: 32px;
     margin-bottom: 10px;
 }
 
 .feature-title {
+    text-align: center;
     font-weight: 700;
     margin-bottom: 6px;
 }
 
 .feature-copy {
+    text-align: center;
     margin: 0;
     color: var(--text-muted);
     font-size: 14px;

@@ -218,7 +218,7 @@ def login_required(f):
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
             return redirect(url_for('login', next=request.url))
-        return f(*args, **kwargs)  # FIXED: was calling decorated_function instead of f
+        return f(*args, **kwargs)
     return decorated_function
 
 
@@ -318,8 +318,14 @@ def product(slug):
         slug, electricity_kwh, gas_kwh, ev_charging, smart_home
     )
 
+    # Create or get user
     user_id, created = create_user_if_needed(email, temp_password)
 
+    # ✅ FIX: Auto-login the user so they can access the booking page
+    session["user_id"] = user_id
+    session["email"] = email
+
+    # Store calculation
     conn = get_db()
     c = conn.cursor()
     c.execute("""
@@ -368,7 +374,6 @@ def book(calc_id):
     notes = (request.form.get("notes") or "").strip()
 
     if not full_name or not preferred_date or not preferred_time:
-        conn.close()
         return render_template("booking.html", calc=calc, error="Fill in name, date and time.")
 
     c = conn.cursor()
