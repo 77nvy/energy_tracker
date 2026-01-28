@@ -19,8 +19,20 @@ def get_db():
 
 
 def init_db():
+    """Initialize database with proper schema migration"""
     conn = get_db()
     c = conn.cursor()
+
+    # Check if users table exists and has the right columns
+    try:
+        c.execute("SELECT must_change_password FROM users LIMIT 1")
+        # Column exists, no migration needed
+    except sqlite3.OperationalError:
+        # Column doesn't exist or table doesn't exist
+        # Drop and recreate the table
+        c.execute("DROP TABLE IF EXISTS users")
+        c.execute("DROP TABLE IF EXISTS calculations")
+        c.execute("DROP TABLE IF EXISTS bookings")
 
     c.execute("""
     CREATE TABLE IF NOT EXISTS users(
@@ -245,16 +257,17 @@ def register():
         return render_template("register.html", error="Password must be at least 8 characters.")
 
     conn = get_db()
+    c = conn.cursor()
     try:
-        conn.execute(
+        c.execute(
             "INSERT INTO users(username, password, must_change_password) VALUES (?, ?, 0)",
             (email, generate_password_hash(password))
         )
         conn.commit()
+        conn.close()
     except sqlite3.IntegrityError:
         conn.close()
         return render_template("register.html", error="That email is already registered.")
-    conn.close()
 
     return redirect(url_for("login"))
 
@@ -321,7 +334,7 @@ def product(slug):
     # Create or get user
     user_id, created = create_user_if_needed(email, temp_password)
 
-    # ✅ FIX: Auto-login the user so they can access the booking page
+    # Auto-login the user so they can access the booking page
     session["user_id"] = user_id
     session["email"] = email
 
