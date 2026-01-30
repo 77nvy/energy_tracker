@@ -2,11 +2,42 @@
 {% block content %}
 <div class="page-content">
   <div class="alert alert-success">
-    <h2>Booking Confirmed</h2>
-    <p>Thanks {{ name }} — we'll be in touch soon.</p>
+    <h2>🎉 Booking Confirmed!</h2>
+    <p style="font-size: 16px; margin-top: 12px;">
+      Thanks {{ name }}! Your 
+      {% if booking_type == 'consultation' %}consultation{% else %}installation{% endif %} 
+      for <strong>{{ product_name }}</strong> has been scheduled.
+    </p>
   </div>
 
-  <div style="text-align: center;">
+  <div class="form-card">
+    <h4>What's Next?</h4>
+    <ul style="line-height: 2;">
+      <li>Check your email for confirmation details</li>
+      <li>Our team will contact you 24 hours before your appointment</li>
+      <li>You can view and manage your booking in your account</li>
+    </ul>
+
+    {% if created_account %}
+      <div style="margin-top: 24px; padding: 16px; background: rgba(107, 139, 255, 0.1); border-radius: 12px; border: 1px solid var(--accent-2);">
+        <h5 style="margin-top: 0; color: var(--accent-2);">📧 Account Created</h5>
+        <p style="color: var(--text-muted); margin-bottom: 8px;">
+          We've created an account for you to track your bookings.
+        </p>
+        {% if temp_password %}
+          <p style="color: var(--text-muted); margin-bottom: 8px;">
+            <strong>Temporary Password:</strong> <code style="background: rgba(0,0,0,0.3); padding: 4px 8px; border-radius: 4px;">{{ temp_password }}</code>
+          </p>
+          <p style="color: var(--text-muted); font-size: 13px;">
+            You'll be asked to change this password when you first log in.
+          </p>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  <div style="text-align: center; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+    <a class="btn btn-primary" href="{{ url_for('account') }}">View My Account</a>
     <a class="btn btn-outline-secondary" href="{{ url_for('index') }}">Back to Home</a>
   </div>
 </div>

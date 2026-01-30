@@ -4,11 +4,38 @@
   <h1 class="page-title">Your Account</h1>
 
   <div class="form-card">
-    <h4>Your Calculations</h4>
+    <h4>Your Bookings</h4>
+    {% if bookings %}
+      <ul>
+        {% for b in bookings %}
+          <li>
+            <strong>{{ b.preferred_date }}</strong> at {{ b.preferred_time }} — 
+            {{ b.product_name }} 
+            <span style="color: var(--accent); text-transform: capitalize;">({{ b.booking_type }})</span>
+            <br>
+            <small style="color: var(--text-muted);">Booked by: {{ b.full_name }}</small>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p style="color: var(--text-muted);">No bookings yet.</p>
+      <a href="{{ url_for('index') }}" class="btn btn-primary" style="margin-top: 16px;">Explore Our Products</a>
+    {% endif %}
+  </div>
+
+  <div class="form-card">
+    <h4>Your Energy Calculations</h4>
     {% if calcs %}
       <ul>
         {% for c in calcs %}
-          <li>{{ c.created_at[:10] }} — {{ c.product_name }} — £{{ c.cost_saved }}/mo saved</li>
+          <li>
+            {{ c.created_at[:10] }} — {{ c.product_name }} 
+            <br>
+            <small style="color: var(--text-muted);">
+              Estimated savings: <strong style="color: var(--accent);">£{{ c.cost_saved }}/month</strong> 
+              ({{ c.kwh_saved }} kWh, {{ c.co2_saved }} kg CO₂ saved)
+            </small>
+          </li>
         {% endfor %}
       </ul>
     {% else %}
@@ -16,17 +43,8 @@
     {% endif %}
   </div>
 
-  <div class="form-card">
-    <h4>Your Bookings</h4>
-    {% if bookings %}
-      <ul>
-        {% for b in bookings %}
-          <li>{{ b.preferred_date }} at {{ b.preferred_time }} — {{ b.full_name }} ({{ b.product_name }})</li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p style="color: var(--text-muted);">No bookings yet.</p>
-    {% endif %}
+  <div style="text-align: center; margin-top: 24px;">
+    <a class="btn btn-outline-secondary" href="{{ url_for('index') }}">Back to Home</a>
   </div>
 </div>
 {% endblock %}

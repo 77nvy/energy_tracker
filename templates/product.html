@@ -1,130 +1,66 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="page-content">
+<div class="page-content" style="max-width: 1000px;">
   <h1 class="page-title">{{ product["name"] }}</h1>
-  <p class="ProductHeadline" style="font-size: 18px; margin-bottom: 32px;">{{ product["short_desc"] }}</p>
-
-  {% if error %}
-    <div class="alert alert-danger">{{ error }}</div>
-  {% endif %}
+  <p style="font-size: 18px; margin-bottom: 32px; color: var(--text-muted);">{{ product["short_desc"] }}</p>
 
   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 40px;">
+    <!-- Product Information -->
     <div class="form-card">
-      <h4>About</h4>
+      <h4>About This Product</h4>
       <p style="color: var(--text-muted); line-height: 1.6;">{{ product["long_desc"] }}</p>
 
-      <h4>Benefits</h4>
+      <h4>Key Benefits</h4>
       <ul>
         {% for b in benefits %}
           <li>{{ b }}</li>
         {% endfor %}
       </ul>
+
+      <h4>Estimated Monthly Savings</h4>
+      <p style="color: var(--accent); font-size: 28px; font-weight: 700; margin: 10px 0;">
+        {{ (product["typical_saving_pct"] * 100) | round(0) }}%
+      </p>
+      <p style="color: var(--text-muted); font-size: 14px;">Based on average household usage</p>
     </div>
 
+    <!-- Booking Options -->
     <div class="form-card">
-      <div class="card-header">Household Energy Use</div>
+      <h4 style="margin-top: 0;">Get Started</h4>
+      <p style="color: var(--text-muted); margin-bottom: 24px;">
+        Choose how you'd like to proceed with {{ product["name"] }}
+      </p>
 
-      <form id="energy-form" method="POST" action="{{ url_for('product', slug=product['slug']) }}">
-        <!-- Helpful context to include in the email -->
-        <input type="hidden" name="product_name" value="{{ product['name'] }}">
-        <input type="hidden" name="product_slug" value="{{ product['slug'] }}">
+      <!-- Book Consultation Button -->
+      <a href="{{ url_for('book', slug=product['slug'], booking_type='consultation') }}" 
+         class="btn btn-primary w-100" style="margin-bottom: 16px; text-decoration: none;">
+        📅 Book Free Consultation
+      </a>
+      <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 24px; text-align: center;">
+        Speak with our experts about your energy needs
+      </p>
 
-        <div class="mb-2">
-          <label class="form-label">Email (to receive results)</label>
-          <input type="email" name="email" class="form-control" required>
-          <input type="hidden" name="temp_password" id="temp_password">
-        </div>
+      <!-- Book Installation Button -->
+      <a href="{{ url_for('book', slug=product['slug'], booking_type='installation') }}" 
+         class="btn btn-success w-100" style="margin-bottom: 16px; text-decoration: none;">
+        🔧 Schedule Installation
+      </a>
+      <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 24px; text-align: center;">
+        Ready to install? Book your installation date
+      </p>
 
-        <div class="mb-2">
-          <label class="form-label">Electricity usage (kWh per month)</label>
-          <input type="number" step="0.01" name="electricity_kwh" class="form-control" required>
-        </div>
-
-        <div class="mb-2">
-          <label class="form-label">Gas usage (kWh per month)</label>
-          <input type="number" step="0.01" name="gas_kwh" class="form-control" value="0">
-        </div>
-
-        <div class="mb-2">
-          <label class="form-label">Home size</label>
-          <select name="home_size" class="form-control">
-            <option>Small</option>
-            <option>Medium</option>
-            <option>Large</option>
-          </select>
-        </div>
-
-        <div class="mb-2">
-          <label class="form-label">Number of occupants</label>
-          <input type="number" name="occupants" min="1" value="1" class="form-control" required>
-        </div>
-
-        <div class="mb-2">
-          <label class="form-label">EV charging at home?</label>
-          <select name="ev_charging" class="form-control">
-            <option value="no">No</option>
-            <option value="yes">Yes</option>
-          </select>
-        </div>
-
-        <div class="form-check mb-3">
-          <input class="form-check-input" type="checkbox" name="smart_home" id="smart_home">
-          <label class="form-check-label" for="smart_home">Smart home devices?</label>
-        </div>
-
-        <button id="energy-submit" type="submit" class="btn btn-success w-100">
-          Calculate Energy & Carbon Footprint
-        </button>
-      </form>
+      <!-- Optional Calculator Link -->
+      <div style="text-align: center; padding-top: 16px; border-top: 1px solid var(--border);">
+        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 12px;">
+          Want to see your personalized savings?
+        </p>
+        <a href="{{ url_for('calculator', slug=product['slug']) }}" class="btn btn-outline-secondary">
+          🧮 Calculate My Savings
+        </a>
+      </div>
     </div>
   </div>
 </div>
 
-
-<script>
-  emailjs.init({ publicKey: "OIOX6GNTOJ7FiHeWN" }); // your public key
-
-  function makeTempPassword(length = 12) {
-    // simple strong-ish demo password generator
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%";
-    let out = "";
-    for (let i = 0; i < length; i++) {
-      out += chars[Math.floor(Math.random() * chars.length)];
-    }
-    return out;
-  }
-
-  window.addEventListener("load", () => {
-    const form = document.getElementById("energy-form");
-    if (!form) return;
-
-    form.addEventListener("submit", (event) => {
-      event.preventDefault();
-
-      // Generate temp password and inject into form
-      const pwd = makeTempPassword(12);
-      document.getElementById("temp_password").value = pwd;
-
-      // Add product name if you want it in the email
-      // (or add <input type="hidden" name="product_name" value="{{product['name']}}"> in HTML)
-      // For demo, we can set it dynamically if a hidden exists:
-      const productHidden = form.querySelector('input[name="product_name"]');
-      if (productHidden) productHidden.value = "{{ product['name'] }}";
-
-      // Send email using EmailJS
-      emailjs.sendForm("service_w1eelyk", "template_74m6f13", form)
-        .then(() => {
-          console.log("EmailJS SUCCESS");
-
-          // After email is sent, submit to Flask to create account + store calc
-          form.submit();
-        })
-        .catch((err) => {
-          console.error("EmailJS FAILED:", err);
-          alert("Email failed to send. Check console.");
-        });
-    });
-  });
-</script>
 {% endblock %}

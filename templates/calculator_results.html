@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-content">
+  <h1 class="page-title">Your Savings Estimate</h1>
+  <p style="color: var(--text-muted); font-size: 16px; margin-bottom: 32px;">
+    {{ product["name"] }} - Results sent to {{ email }}
+  </p>
+
+  <div class="form-card" style="background: linear-gradient(135deg, rgba(107, 139, 255, 0.1), rgba(255, 77, 168, 0.1));">
+    <h3 style="text-align: center; margin-top: 0;">Monthly Savings Breakdown</h3>
+    
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 24px;">
+      <div style="text-align: center;">
+        <div style="font-size: 14px; color: var(--text-muted); margin-bottom: 8px;">Energy Saved</div>
+        <div style="font-size: 32px; font-weight: 700; color: var(--accent-2);">{{ kwh_saved }}</div>
+        <div style="font-size: 14px; color: var(--text-muted);">kWh/month</div>
+      </div>
+      
+      <div style="text-align: center;">
+        <div style="font-size: 14px; color: var(--text-muted); margin-bottom: 8px;">Money Saved</div>
+        <div style="font-size: 32px; font-weight: 700; color: var(--accent);">£{{ cost_saved }}</div>
+        <div style="font-size: 14px; color: var(--text-muted);">/month</div>
+      </div>
+      
+      <div style="text-align: center;">
+        <div style="font-size: 14px; color: var(--text-muted); margin-bottom: 8px;">CO₂ Reduced</div>
+        <div style="font-size: 32px; font-weight: 700; color: #4dff88;">{{ co2_saved }}</div>
+        <div style="font-size: 14px; color: var(--text-muted);">kg/month</div>
+      </div>
+    </div>
+
+    <div style="margin-top: 32px; padding: 16px; background: rgba(0,0,0,0.2); border-radius: 12px; text-align: center;">
+      <p style="font-size: 18px; margin: 0;">
+        <strong>Annual Savings: £{{ (cost_saved * 12) | round(2) }}</strong>
+      </p>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <h4 style="margin-top: 0;">Ready to Get Started?</h4>
+    <p style="color: var(--text-muted); margin-bottom: 24px;">
+      Book your free consultation or schedule installation now
+    </p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+      <a href="{{ url_for('book', slug=product['slug'], booking_type='consultation') }}" 
+         class="btn btn-primary" style="text-decoration: none;">
+        📅 Book Consultation
+      </a>
+      
+      <a href="{{ url_for('book', slug=product['slug'], booking_type='installation') }}" 
+         class="btn btn-success" style="text-decoration: none;">
+        🔧 Schedule Installation
+      </a>
+    </div>
+  </div>
+
+  <div style="text-align: center; margin-top: 20px;">
+    <a class="btn-link" href="{{ url_for('product', slug=product['slug']) }}">
+      ← Back to {{ product["name"] }}
+    </a>
+  </div>
+</div>
+{% endblock %}
